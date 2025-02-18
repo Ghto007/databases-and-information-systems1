@@ -1,0 +1,57 @@
+-- База даних для ветеринарної клініки
+
+-- 1. Які тварини отримали лікування в клініці?
+SELECT PET.Name, PET.Species, PET.Breed, APPOINTMENT.Diagnosis
+FROM PET
+JOIN APPOINTMENT ON PET.PetID = APPOINTMENT.PetID;
+
+-- 2. Скільки тварин було оперовано за певний період?
+SELECT COUNT(*) AS TotalSurgeries
+FROM APPOINTMENT
+WHERE Diagnosis LIKE '%операція%'
+AND DATE BETWEEN '2024-01-01' AND '2024-02-10';
+
+-- 3. Які лікарі працюють в клініці?
+SELECT Name, Specialization, Contact FROM VETERINARIAN;
+
+-- 4. Яка кількість тварин перебувала на стаціонарному лікуванні?
+SELECT COUNT(*) AS Inpatients
+FROM APPOINTMENT
+WHERE Diagnosis LIKE '%стаціонар%';
+
+-- 5. Скільки клієнтів відвідали клініку більше ніж один раз?
+SELECT OWNER.OwnerID, OWNER.Name, COUNT(APPOINTMENT.AppointmentID) AS Visits
+FROM OWNER
+JOIN PET ON OWNER.OwnerID = PET.OwnerID
+JOIN APPOINTMENT ON PET.PetID = APPOINTMENT.PetID
+GROUP BY OWNER.OwnerID, OWNER.Name
+HAVING COUNT(APPOINTMENT.AppointmentID) > 1;
+
+-- 6. Яка середня вартість лікування для тварин?
+SELECT AVG(Price) AS AvgTreatmentCost
+FROM MEDICATION;
+
+-- 7. Скільки тварин потребують повторного лікування після операції?
+SELECT COUNT(*) AS FollowUpNeeded
+FROM APPOINTMENT
+WHERE Diagnosis LIKE '%операція%' AND DATE < NOW() - INTERVAL '1 month';
+
+-- 8. Які ліки найчастіше призначалися для лікування тварин?
+SELECT MEDICATION.Name, COUNT(PRESCRIPTION.MedicationID) AS PrescriptionCount
+FROM PRESCRIPTION
+JOIN MEDICATION ON PRESCRIPTION.MedicationID = MEDICATION.MedicationID
+GROUP BY MEDICATION.Name
+ORDER BY PrescriptionCount DESC
+LIMIT 5;
+
+-- 9. Яка кількість тварин була вакцинована за період?
+SELECT COUNT(*) AS VaccinatedPets
+FROM APPOINTMENT
+WHERE Diagnosis LIKE '%вакцинація%'
+AND DATE BETWEEN '2024-01-01' AND '2024-02-10';
+
+-- 10. Скільки тварин було проведено під час певних процедур?
+SELECT Diagnosis, COUNT(*) AS ProcedureCount
+FROM APPOINTMENT
+WHERE Diagnosis NOT LIKE '%вакцинація%' AND Diagnosis NOT LIKE '%операція%'
+GROUP BY Diagnosis;
